@@ -1,46 +1,111 @@
 import { useEffect, useState } from 'react';
 import './App.css';
 import { LinkedList, ListNode } from './LinkedList';
+import { useInterval } from './utils';
 
 const GRID_SIZE = 10;
+const DIRECTION = {
+  UP: 0,
+  DOWN: 1,
+  LEFT: 2,
+  RIGHT: 3
+};
 
 function App() {
   const [snake, setSnake] = useState(new LinkedList({
     r: 0,
-    c: 1,
-    cellNumber: 2
+    c: 0,
+    cellNumber: 1,
+    direction: DIRECTION.RIGHT
   }));
-  
-  
+  const [gameOver, setGameOver] = useState(false);
+
+  let growSnakeFlag = false;
 
   const [snakeCells, setSnakeCells] = useState(new Set().add(snake.head.val.cellNumber));
+
   useEffect(() => {
-    if (snake.head.val.cellNumber < 10) {
-      setTimeout(() => {
-        const newSnakeHead = new ListNode({
-          r: 0,
-          c: snake.head.val.c + 1,
-          cellNumber: snake.head.val.cellNumber + 1
-        });
-        snake.head.next = newSnakeHead;
-        snake.head = newSnakeHead;
-        
-        const newSnakeCells = new Set(snakeCells);
-        newSnakeCells.delete(snake.tail.val.cellNumber);
-        newSnakeCells.add(snake.head.val.cellNumber);
-        snake.tail = snake.tail.next;
+    if (snake.head.val.cellNumber >= 10)
+      setGameOver(true);
+  }, [snake]);
 
-        setSnakeCells(newSnakeCells);
-        
-      }, 1000);
+  useInterval(() => {
+    const newSnakeHead = new ListNode({
+      r: 0,
+      c: snake.head.val.c + 1,
+      cellNumber: snake.head.val.cellNumber + 1,
+      direction: snake.head.val.direction
+    });
+    snake.head.next = newSnakeHead;
+    snake.head = newSnakeHead;
+
+    const newSnakeCells = new Set(snakeCells);
+    newSnakeCells.delete(snake.tail.val.cellNumber);
+    newSnakeCells.add(snake.head.val.cellNumber);
+    snake.tail = snake.tail.next;
+
+    if (growSnakeFlag) {
+      growSnake(newSnakeCells);
     }
-  }, [snakeCells, snake]);
 
-  const growSnake = () => {
+    setSnakeCells(newSnakeCells);
+    if (snake.head.val.cellNumber >= 10)
+      setGameOver(true);
+  }, 700, gameOver);
 
-  }
+  const growSnake = (newSnakeCells) => {
+    const tailDirection = snake.tail.val.direction;
+    const tailRow = snake.tail.val.r;
+    const tailColumn = snake.tail.val.c;
+    let newTail;
+    switch (tailDirection) {
+      case DIRECTION.UP: {
+        newTail = new ListNode({
+          r: tailRow + 1,
+          c: tailColumn,
+          cellNumber: ((tailRow + 1) * GRID_SIZE) + tailColumn + 1,
+          direction: tailDirection
+        });
+        break;
+      }
+      case DIRECTION.DOWN: {
+        newTail = new ListNode({
+          r: tailRow - 1,
+          c: tailColumn,
+          cellNumber: ((tailRow - 1) * GRID_SIZE) + tailColumn + 1,
+          direction: tailDirection
+        });
+        break;
+      }
+      case DIRECTION.LEFT: {
+        newTail = new ListNode({
+          r: tailRow,
+          c: tailColumn + 1,
+          cellNumber: (tailRow * GRID_SIZE) + (tailColumn + 1) + 1,
+          direction: tailDirection
+        });
+        break;
+      }
+      case DIRECTION.RIGHT: {
+        newTail = new ListNode({
+          r: tailRow,
+          c: tailColumn - 1,
+          cellNumber: (tailRow * GRID_SIZE) + (tailColumn - 1) + 1,
+          direction: tailDirection
+        });
+        break;
+      }
+      default: newTail = null;
+    }
 
-  
+    newTail.next = snake.tail;
+    snake.tail = newTail;
+    newSnakeCells.add(snake.tail.val.cellNumber);
+
+    growSnakeFlag = false;
+  };
+
+
   let rows = [];
   let counter = 0;
   for (let i = 0; i < GRID_SIZE; i++) {
@@ -53,9 +118,7 @@ function App() {
 
   return (
     <div className="App">
-      <button onClick={() => {
-
-      }}>Add tail</button>
+      <button onClick={() => growSnakeFlag = true}>Add tail</button>
       <div className="Grid">
         {
           rows.map((row, i) =>
