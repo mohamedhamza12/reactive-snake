@@ -22,17 +22,17 @@ function App() {
 
   let growSnakeFlag = false;
 
-  const [snakeCells, setSnakeCells] = useState(new Set().add(snake.head.val.cellNumber).add(18));
+  const [snakeCells, setSnakeCells] = useState(new Set().add(snake.head.val.cellNumber));
 
   useEffect(() => {
     window.addEventListener('keydown', e => {
-      if (e.key === 'ArrowDown')
+      if (e.key === 'ArrowDown' && snake.head.val.direction !== DIRECTION.UP)
         snake.head.val.direction = DIRECTION.DOWN;
-      else if (e.key === 'ArrowUp')
+      else if (e.key === 'ArrowUp' && snake.head.val.direction !== DIRECTION.DOWN)
         snake.head.val.direction = DIRECTION.UP;
-        else if (e.key === 'ArrowLeft')
+        else if (e.key === 'ArrowLeft' && snake.head.val.direction !== DIRECTION.RIGHT)
         snake.head.val.direction = DIRECTION.LEFT;
-        else if (e.key === 'ArrowRight')
+        else if (e.key === 'ArrowRight' && snake.head.val.direction !== DIRECTION.LEFT)
         snake.head.val.direction = DIRECTION.RIGHT;
     })
   }, [snake]);
@@ -55,6 +55,7 @@ function App() {
 
     if (isSnakeOutOfBounds())
       setGameOver(true);
+
   }, 400, gameOver);
 
   const isSnakeOutOfBounds = () => {
