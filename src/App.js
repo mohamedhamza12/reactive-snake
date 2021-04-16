@@ -22,7 +22,7 @@ function App() {
 
   let growSnakeFlag = false;
 
-  const [snakeCells, setSnakeCells] = useState(new Set().add(snake.head.val.cellNumber));
+  const [snakeCells, setSnakeCells] = useState(new Set().add(snake.head.val.cellNumber).add(18));
 
   useEffect(() => {
     window.addEventListener('keydown', e => {
@@ -53,9 +53,20 @@ function App() {
 
     setSnakeCells(newSnakeCells);
 
-    /* if (snake.head.val.cellNumber >= 10)
-      setGameOver(true); */
+    if (isSnakeOutOfBounds())
+      setGameOver(true);
   }, 400, gameOver);
+
+  const isSnakeOutOfBounds = () => {
+    const row = snake.head.val.r;
+    const column = snake.head.val.c;
+    const cellNumber = snake.head.val.cellNumber;
+
+    if (row < 0 || column < 0 || row >= GRID_SIZE || column >= GRID_SIZE || snakeCells.has(cellNumber))
+      return true;
+
+    return false;
+  }
 
   const getNewSnakeCoords = () => {
     let newSnakeHead;
