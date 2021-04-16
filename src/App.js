@@ -25,17 +25,20 @@ function App() {
   const [snakeCells, setSnakeCells] = useState(new Set().add(snake.head.val.cellNumber));
 
   useEffect(() => {
-    if (snake.head.val.cellNumber >= 10)
-      setGameOver(true);
+    window.addEventListener('keydown', e => {
+      if (e.key === 'ArrowDown')
+        snake.head.val.direction = DIRECTION.DOWN;
+      else if (e.key === 'ArrowUp')
+        snake.head.val.direction = DIRECTION.UP;
+        else if (e.key === 'ArrowLeft')
+        snake.head.val.direction = DIRECTION.LEFT;
+        else if (e.key === 'ArrowRight')
+        snake.head.val.direction = DIRECTION.RIGHT;
+    })
   }, [snake]);
 
   useInterval(() => {
-    const newSnakeHead = new ListNode({
-      r: 0,
-      c: snake.head.val.c + 1,
-      cellNumber: snake.head.val.cellNumber + 1,
-      direction: snake.head.val.direction
-    });
+    const newSnakeHead = getNewSnakeCoords();
     snake.head.next = newSnakeHead;
     snake.head = newSnakeHead;
 
@@ -49,9 +52,59 @@ function App() {
     }
 
     setSnakeCells(newSnakeCells);
-    if (snake.head.val.cellNumber >= 10)
-      setGameOver(true);
-  }, 700, gameOver);
+
+    /* if (snake.head.val.cellNumber >= 10)
+      setGameOver(true); */
+  }, 400, gameOver);
+
+  const getNewSnakeCoords = () => {
+    let newSnakeHead;
+    const headRow = snake.head.val.r;
+    const headColumn = snake.head.val.c;
+    const headDirection = snake.head.val.direction;
+
+    switch (headDirection) {
+      case DIRECTION.UP: {
+        newSnakeHead = new ListNode({
+          r: headRow - 1,
+          c: headColumn,
+          cellNumber: ((headRow - 1) * GRID_SIZE) + headColumn + 1,
+          direction: headDirection
+        });
+        break;
+      }
+      case DIRECTION.DOWN: {
+        newSnakeHead = new ListNode({
+          r: headRow + 1,
+          c: headColumn,
+          cellNumber: ((headRow + 1) * GRID_SIZE) + headColumn + 1,
+          direction: headDirection
+        });
+        break;
+      }
+      case DIRECTION.LEFT: {
+        newSnakeHead = new ListNode({
+          r: headRow,
+          c: headColumn - 1,
+          cellNumber: (headRow * GRID_SIZE) + (headColumn - 1) + 1,
+          direction: headDirection
+        });
+        break;
+      }
+      case DIRECTION.RIGHT: {
+        newSnakeHead = new ListNode({
+          r: headRow,
+          c: headColumn + 1,
+          cellNumber: (headRow * GRID_SIZE) + (headColumn + 1) + 1,
+          direction: headDirection
+        });
+        break;
+      }
+      default: newSnakeHead = null;
+    }
+
+    return newSnakeHead;
+  }
 
   const growSnake = (newSnakeCells) => {
     const tailDirection = snake.tail.val.direction;
@@ -117,7 +170,7 @@ function App() {
   }
 
   return (
-    <div className="App">
+    <div className="App" onKeyDown={e => {if (e.key === 'Enter') alert('enter')}}>
       <button onClick={() => growSnakeFlag = true}>Add tail</button>
       <div className="Grid">
         {
