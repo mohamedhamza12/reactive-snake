@@ -19,10 +19,8 @@ function App() {
     direction: DIRECTION.RIGHT
   }));
   const [gameOver, setGameOver] = useState(false);
-
-  let growSnakeFlag = false;
-
   const [snakeCells, setSnakeCells] = useState(new Set().add(snake.head.val.cellNumber));
+  const [foodCell, setFoodCell] = useState(18);
 
   useEffect(() => {
     window.addEventListener('keydown', e => {
@@ -47,16 +45,25 @@ function App() {
     newSnakeCells.add(snake.head.val.cellNumber);
     snake.tail = snake.tail.next;
 
-    if (growSnakeFlag) {
+    if (newSnakeHead.val.cellNumber === foodCell) {
       growSnake(newSnakeCells);
+      generateNewFoodCell();
     }
 
     setSnakeCells(newSnakeCells);
 
-    if (isSnakeOutOfBounds())
+    if (isSnakeOutOfBounds()) {
+      console.log('game over')
       setGameOver(true);
+    }
+      
 
-  }, 400, gameOver);
+  }, 200, gameOver);
+
+  const generateNewFoodCell = () => {
+    const newCell = Math.floor((Math.random() * (GRID_SIZE * GRID_SIZE)) + 1);
+    setFoodCell(newCell);
+  }
 
   const isSnakeOutOfBounds = () => {
     const row = snake.head.val.r;
@@ -166,8 +173,6 @@ function App() {
     newTail.next = snake.tail;
     snake.tail = newTail;
     newSnakeCells.add(snake.tail.val.cellNumber);
-
-    growSnakeFlag = false;
   };
 
 
@@ -183,7 +188,9 @@ function App() {
 
   return (
     <div className="App" onKeyDown={e => {if (e.key === 'Enter') alert('enter')}}>
-      <button onClick={() => growSnakeFlag = true}>Add tail</button>
+      {gameOver ? 
+      <div className="game-over">Game Over</div> : 
+      null}
       <div className="Grid">
         {
           rows.map((row, i) =>
@@ -192,6 +199,8 @@ function App() {
                 row.map((column, j) =>
                   snakeCells.has(column) ?
                     <div key={i + ',' + j} className="SnakeCell"></div> :
+                    column === foodCell ?
+                    <div key={i + ',' + j} className="FoodCell"></div> :
                     <div key={i + ',' + j} className="Cell"></div>)
               }
             </div>)
