@@ -175,6 +175,19 @@ function App() {
     newSnakeCells.add(snake.tail.val.cellNumber);
   };
 
+  const restart = () => {
+    const newSnake = new LinkedList({
+      r: 0,
+      c: 0,
+      cellNumber: 1,
+      direction: DIRECTION.RIGHT
+    });
+    const newSnakeCells = new Set().add(newSnake.head.val.cellNumber);
+    setSnake(newSnake);
+    setSnakeCells(newSnakeCells);
+    setFoodCell(18);
+    setGameOver(false);
+  }
 
   let rows = [];
   let counter = 0;
@@ -189,7 +202,12 @@ function App() {
   return (
     <div className="App" onKeyDown={e => {if (e.key === 'Enter') alert('enter')}}>
       {gameOver ? 
-      <div className="game-over">Game Over</div> : 
+      <div className="game-over-wrapper">
+        <div className="game-over">Game Over</div>
+        <div>
+          <button onClick={restart}>Restart</button>
+        </div>
+      </div> : 
       null}
       <div className="Grid">
         {
