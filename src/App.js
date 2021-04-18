@@ -21,16 +21,22 @@ function App() {
   const [gameOver, setGameOver] = useState(false);
   const [snakeCells, setSnakeCells] = useState(new Set().add(snake.head.val.cellNumber));
   const [foodCell, setFoodCell] = useState(18);
-  const [freeCells, setFreeCells] = useState([...Array(GRID_SIZE * GRID_SIZE)].map((_, i) => i + 1).splice(1, 1).splice(17, 1));
-  const [freeCellsMap, setFreeCellsMap] = useState(() => {
-    const obj = {};
-    for (let i = 0; i < freeCells.length; i++) {
-      obj[freeCells[i]] = i;
-    }
+  const [freeCells, setFreeCells] = useState((() => {
+    const freeCellsArr = [...Array(GRID_SIZE * GRID_SIZE)].map((_, i) => i + 1);
+    freeCellsArr.splice(0, 1);
+    freeCellsArr.splice(17, 1);
 
+    return freeCellsArr;
+  })());
+
+  const [freeCellsMap, setFreeCellsMap] = useState((() => {
+    const freeCellsArray = freeCells;
+    const obj = {};
+    for (let i = 0; i < freeCellsArray.length; i++) {
+      obj[freeCellsArray[i]] = i;
+    }
     return obj;
-  });
-  //TODO: fix random food cell spawning 
+  })());
 
   useEffect(() => {
     window.addEventListener('keydown', e => {
@@ -74,20 +80,22 @@ function App() {
     setSnakeCells(newSnakeCells);
       
 
-  }, 200, gameOver);
+  }, 500, gameOver);
 
   const generateNewFoodCell = () => {
     const freeCellsCount = freeCells.length - 1;
     const newCellIndex = Math.floor((Math.random() * freeCellsCount));
+    console.log('cell index: ', newCellIndex);
     const map = freeCellsMap;
     const oldMapValue = map[freeCells[newCellIndex]];
+    console.log('old map value: ', oldMapValue);
     map[freeCells[newCellIndex]] = null
 
     const newCell = freeCells[newCellIndex];
     map[newCell] = oldMapValue;
-    const updatedFreeCells = freeCells.splice(newCellIndex, 1, foodCell);
+    freeCells.splice(newCellIndex, 1, foodCell);
     setFreeCellsMap(map);
-    setFreeCells(updatedFreeCells);
+    //setFreeCells(updatedFreeCells);
     setFoodCell(newCell);
   }
 
@@ -201,7 +209,8 @@ function App() {
     newSnakeCells.add(snake.tail.val.cellNumber);
 
     const freeCellsIndexToRemove = freeCellsMap[snake.tail.val.cellNumber];
-    setFreeCells(freeCells.splice(freeCellsIndexToRemove, 1));
+    freeCells.splice(freeCellsIndexToRemove, 1);
+    //setFreeCells(freeCells.splice(freeCellsIndexToRemove, 1));
     freeCellsMap[snake.tail.val.cellNumber] = null;
   };
 
