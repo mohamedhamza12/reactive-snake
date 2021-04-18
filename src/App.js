@@ -21,6 +21,8 @@ function App() {
   const [gameOver, setGameOver] = useState(false);
   const [snakeCells, setSnakeCells] = useState(new Set().add(snake.head.val.cellNumber));
   const [foodCell, setFoodCell] = useState(18);
+  const [freeCells, setFreeCells] = useState([...Array(GRID_SIZE * GRID_SIZE)].filter((_, i) => i + 1).splice(1, 1));
+  //TODO: handle random food cell spawning 
 
   useEffect(() => {
     window.addEventListener('keydown', e => {
@@ -200,7 +202,7 @@ function App() {
   }
 
   return (
-    <div className="App" onKeyDown={e => {if (e.key === 'Enter') alert('enter')}}>
+    <div className="app" onKeyDown={e => {if (e.key === 'Enter') alert('enter')}}>
       {gameOver ? 
       <div className="game-over-wrapper">
         <div className="game-over">Game Over</div>
@@ -209,17 +211,17 @@ function App() {
         </div>
       </div> : 
       null}
-      <div className="Grid">
+      <div className="grid">
         {
           rows.map((row, i) =>
-            <div key={i} className="Row">
+            <div key={i} className="row">
               {
                 row.map((column, j) =>
                   snakeCells.has(column) ?
-                    <div key={i + ',' + j} className="SnakeCell"></div> :
+                    <div key={i + ',' + j} className="snake-cell"></div> :
                     column === foodCell ?
-                    <div key={i + ',' + j} className="FoodCell"></div> :
-                    <div key={i + ',' + j} className="Cell"></div>)
+                    <div key={i + ',' + j} className="food-cell"></div> :
+                    <div key={i + ',' + j} className="cell"></div>)
               }
             </div>)
         }
