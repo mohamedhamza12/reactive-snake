@@ -21,8 +21,16 @@ function App() {
   const [gameOver, setGameOver] = useState(false);
   const [snakeCells, setSnakeCells] = useState(new Set().add(snake.head.val.cellNumber));
   const [foodCell, setFoodCell] = useState(18);
-  const [freeCells, setFreeCells] = useState([...Array(GRID_SIZE * GRID_SIZE)].filter((_, i) => i + 1).splice(1, 1));
-  //TODO: handle random food cell spawning 
+  const [freeCells, setFreeCells] = useState([...Array(GRID_SIZE * GRID_SIZE)].map((_, i) => i + 1).splice(1, 1).splice(17, 1));
+  const [freeCellsMap, setFreeCellsMap] = useState(() => {
+    const obj = {};
+    for (let i = 0; i < freeCells.length; i++) {
+      obj[freeCells[i]] = i;
+    }
+
+    return obj;
+  });
+  //TODO: fix random food cell spawning 
 
   useEffect(() => {
     window.addEventListener('keydown', e => {
@@ -39,38 +47,54 @@ function App() {
 
   useInterval(() => {
     const newSnakeHead = getNewSnakeCoords();
+    if (isSnakeOutOfBounds(newSnakeHead)) {
+      setGameOver(true);
+      return;
+    }
+
     snake.head.next = newSnakeHead;
     snake.head = newSnakeHead;
+
 
     const newSnakeCells = new Set(snakeCells);
     newSnakeCells.delete(snake.tail.val.cellNumber);
     newSnakeCells.add(snake.head.val.cellNumber);
+    
+    const headIndex = freeCellsMap[snake.head.val.cellNumber];
+    freeCellsMap[snake.head.val.cellNumber] = null;
+    freeCellsMap[snake.tail.val.cellNumber] = headIndex;
+    freeCells.splice(headIndex, 1, snake.tail.val.cellNumber);
+
     snake.tail = snake.tail.next;
 
     if (newSnakeHead.val.cellNumber === foodCell) {
       growSnake(newSnakeCells);
       generateNewFoodCell();
     }
-
     setSnakeCells(newSnakeCells);
-
-    if (isSnakeOutOfBounds()) {
-      console.log('game over')
-      setGameOver(true);
-    }
       
 
   }, 200, gameOver);
 
   const generateNewFoodCell = () => {
-    const newCell = Math.floor((Math.random() * (GRID_SIZE * GRID_SIZE)) + 1);
+    const freeCellsCount = freeCells.length - 1;
+    const newCellIndex = Math.floor((Math.random() * freeCellsCount));
+    const map = freeCellsMap;
+    const oldMapValue = map[freeCells[newCellIndex]];
+    map[freeCells[newCellIndex]] = null
+
+    const newCell = freeCells[newCellIndex];
+    map[newCell] = oldMapValue;
+    const updatedFreeCells = freeCells.splice(newCellIndex, 1, foodCell);
+    setFreeCellsMap(map);
+    setFreeCells(updatedFreeCells);
     setFoodCell(newCell);
   }
 
-  const isSnakeOutOfBounds = () => {
-    const row = snake.head.val.r;
-    const column = snake.head.val.c;
-    const cellNumber = snake.head.val.cellNumber;
+  const isSnakeOutOfBounds = (newSnakeHead) => {
+    const row = newSnakeHead.val.r;
+    const column = newSnakeHead.val.c;
+    const cellNumber = newSnakeHead.val.cellNumber;
 
     if (row < 0 || column < 0 || row >= GRID_SIZE || column >= GRID_SIZE || snakeCells.has(cellNumber))
       return true;
@@ -175,6 +199,10 @@ function App() {
     newTail.next = snake.tail;
     snake.tail = newTail;
     newSnakeCells.add(snake.tail.val.cellNumber);
+
+    const freeCellsIndexToRemove = freeCellsMap[snake.tail.val.cellNumber];
+    setFreeCells(freeCells.splice(freeCellsIndexToRemove, 1));
+    freeCellsMap[snake.tail.val.cellNumber] = null;
   };
 
   const restart = () => {
